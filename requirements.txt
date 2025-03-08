@@ -1,0 +1,5 @@
+langchain==0.1.44
+langchain-community==0.0.30
+langchain-openai==0.0.7
+langgraph==0.0.22
+networkx==3.2.1
