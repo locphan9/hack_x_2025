@@ -6,6 +6,8 @@ from random import randint
 import re
 import pickle
 import os
+import json
+from typing import List, Dict
 
 from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver
@@ -16,11 +18,11 @@ from langchain_core.tools import tool
 
 # 5. Define the Text to NetworkX/cuGraph Tool
 # Note: It is encouraged to experiment and improve this section! This is just a placeholder:
-
+global_var = None
 G = None
 with open('book_graph.gpickle', 'rb') as f:
     G = pickle.load(f)
-
+    
 
 schemas = {
   "node_types": {
@@ -76,16 +78,16 @@ schemas = {
 llm = ChatOpenAI(temperature=0, model_name="gpt-4o")
 
 @tool
-def text_to_nx_algorithm_to_text(query: str) -> str:
+def text_to_nx_algorithm_to_text(query: str) -> List[Dict[str,str]]:
     """This tool is available to invoke a NetworkX Algorithm on
     the NetworkX Graph. You are responsible for accepting the
     Natural Language Query, establishing which algorithm needs to
     be executed, executing the algorithm, and translating the results back
-    to Natural Language, with respect to the original query.
+    to Natural Language, with respect to the original query. For final response, you must
+    return a string containing a list of dictionaries List[Dict[str,str]]
 
     """
-
-    llm = ChatOpenAI(temperature=0, model_name="gpt-4o")
+    llm = ChatOpenAI(temperature=0, model_name="gpt-4o-mini")
 
     ######################
     print("1) Generating NetworkX code")
@@ -95,23 +97,24 @@ def text_to_nx_algorithm_to_text(query: str) -> str:
 
     I have the following graph analysis query: {query}.
 
+    Analyze the `keyword`, `genre`, and `title` to generate Python code.
+    
     Generate the Python Code required to answer the query using the `G` object.
 
     Be very precise on the NetworkX algorithm you select to answer this query. Think step by step.
 
     Only assume that networkx is installed, and other base python dependencies.
-
+    
     Always set the last variable as `FINAL_RESULT`, which represents the answer to the original query.
 
     Only provide python code that I can directly execute via `exec()`. Do not provide any instructions.
     
-    Make sure the `FINAL_RESULT` is a json string contain book["title"], book["url"]
+    Make sure the `FINAL_RESULT` is a json string containing book["title"], book["url"]
 
-    Make sure that `FINAL_RESULT` stores a short & consice answer. Avoid setting this variable to a long sequence.
+    Make sure that `FINAL_RESULT` stores a short & concise answer. Avoid setting this variable to a long sequence.
 
     Your code:
     """).content
-
     text_to_nx_cleaned = re.sub(r"^```python\n|```$", "", text_to_nx, flags=re.MULTILINE).strip()
 
     print('-'*10)
@@ -140,43 +143,38 @@ def text_to_nx_algorithm_to_text(query: str) -> str:
 
     print('-'*10)
     FINAL_RESULT = local_vars["FINAL_RESULT"]
-    print(f"FINAL_RESULT: {FINAL_RESULT}")
+    # print(f"FINAL_RESULT: {FINAL_RESULT}")
     print('-'*10)
-
     ######################
 
-    return f"FINAL_RESULT: {FINAL_RESULT}"
-
-    #     
-    # print("3) Formulating final answer")
-
-    # nx_to_text = llm.invoke(f"""
-    #     I have a NetworkX Graph called `G`. It has the following schema: {schemas}
-
-    #     I have the following graph analysis query: {query}.
-
-    #     I have executed the following python code to help me answer my query:
-
-    #     ---
-    #     {text_to_nx_final}
-    #     ---
-
-    #     The `FINAL_RESULT` variable is set to the following: {FINAL_RESULT}.
-
-    #     Based on my original Query and FINAL_RESULT, generate a short and concise response to
-    #     answer my query.
-
-    #     Your response:
-    # """).content
-
+    return FINAL_RESULT
 @tool
 def favourite_fruit(query: str):
     """You are responsible for responding to being asked what your favourite fruit is.
-    You must say Avocado!
+    You must say ['Avocado','Watermellon]
     """
-    return "Avocado!"
+    response = ['Avocado', 'Watermellon']
+    return str(response)
 tools = [text_to_nx_algorithm_to_text, favourite_fruit]
 
+
+def convert(query:str) -> List:
+    """
+    You are responsible for converting query in string format to a more structured List format
+    """
+    llm = ChatOpenAI(temperature=0, model_name="gpt-4o-mini")
+    response = llm.invoke(
+    f"""
+    I have an input {query} that is currently in string format.
+    
+    Please help me extract all book title and book url
+
+    Make sure you give no further instruction
+
+    And please help me output the final response in JSON string format that is easy for me to run json.load. Thank you
+    """
+    ).content
+    return response
 def query_graph(query):
     llm = ChatOpenAI(temperature=0, model_name="gpt-4o")
     app = create_react_agent(llm, tools)
