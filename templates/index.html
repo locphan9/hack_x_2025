@@ -5,24 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 
-    <title>Librarian</title>
+    <title>Queryan</title>
 </head>
 <body>
-    <h1>Librarian</h1>
-    <form action="/" method="post">
-        <input type="text" name="search_query" placeholder="Search...">
-        <input type="submit">
-    </form>
-    <div class="book-container">
-        {% for book in books %}
-        <div class="book-card">
-            <a href="{{ book.url }}" class="book-link" target="_blank">
-                <img src="{{ book.cover }}" alt="{{ book.title }}" class="book-cover">
-                <div class="book-title">{{ book.title }}</div>
-            </a>
-        </div>
-        {% endfor %}
-    </div>
+    
 
+    <div class="content-container">
+        <h1>Queryan</h1>
+        <form action="/" method="post">
+            <input type="text" name="search_query" placeholder="Search...">
+            <input type="submit">
+        </form>
+        <div class="book-container">
+            {% if books is defined %}
+                {% if status == True %}
+                    {% for book in books %}
+                    <div class="book-card">
+                        <a href="{{ book.url }}" class="book-link" target="_blank">
+                            <img src="{{ book.cover }}" alt="{{ book.title }}" class="book-cover">
+                            <div class="book-title">{{ book.title }}</div>
+                        </a>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-book">
+                        <p>Try search another theme</p>
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
 </body>
 </html>

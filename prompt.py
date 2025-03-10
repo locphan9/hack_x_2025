@@ -74,9 +74,6 @@ schemas = {
   }
 }
 
-
-llm = ChatOpenAI(temperature=0, model_name="gpt-4o")
-
 @tool
 def text_to_nx_algorithm_to_text(query: str) -> List[Dict[str,str]]:
     """This tool is available to invoke a NetworkX Algorithm on
@@ -87,7 +84,7 @@ def text_to_nx_algorithm_to_text(query: str) -> List[Dict[str,str]]:
     return a string containing a list of dictionaries List[Dict[str,str]]
 
     """
-    llm = ChatOpenAI(temperature=0, model_name="gpt-4o-mini")
+    llm = ChatOpenAI(temperature=0, model_name="gpt-4o")
 
     ######################
     print("1) Generating NetworkX code")
@@ -109,10 +106,11 @@ def text_to_nx_algorithm_to_text(query: str) -> List[Dict[str,str]]:
 
     Only provide python code that I can directly execute via `exec()`. Do not provide any instructions.
     
-    Make sure the `FINAL_RESULT` is a json string containing book["title"], book["url"]
+    Make sure the `FINAL_RESULT` is a json string containing the title book["title"], and the link book["url"]
 
     Make sure that `FINAL_RESULT` stores a short & concise answer. Avoid setting this variable to a long sequence.
 
+    Consider slicing if `FINAL_RESULT` may exceed limit_rate
     Your code:
     """).content
     text_to_nx_cleaned = re.sub(r"^```python\n|```$", "", text_to_nx, flags=re.MULTILINE).strip()
@@ -148,14 +146,8 @@ def text_to_nx_algorithm_to_text(query: str) -> List[Dict[str,str]]:
     ######################
 
     return FINAL_RESULT
-@tool
-def favourite_fruit(query: str):
-    """You are responsible for responding to being asked what your favourite fruit is.
-    You must say ['Avocado','Watermellon]
-    """
-    response = ['Avocado', 'Watermellon']
-    return str(response)
-tools = [text_to_nx_algorithm_to_text, favourite_fruit]
+
+tools = [text_to_nx_algorithm_to_text]
 
 
 def convert(query:str) -> List:
