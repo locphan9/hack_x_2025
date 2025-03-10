@@ -73,4 +73,9 @@ Open a browser and navigate to `http://127.0.0.1:5000/` to access the app.
 - Verify that the OpenAI API key is correctly set by running `echo $OPENAI_API_KEY` (Linux/Mac) or `echo %OPENAI_API_KEY%` (Windows).
 
 ---
+## Datset 
+Data retrieved from [https://cseweb.ucsd.edu/~jmcauley/datasets/goodreads.html](Goodreads book graph dataset)
+Mengting Wan, Julian McAuley, "Item Recommendation on Monotonic Behavior Chains", in RecSys'18. [bibtex]
+Mengting Wan, Rishabh Misra, Ndapa Nakashole, Julian McAuley, "Fine-Grained Spoiler Detection from Large-Scale Review Corpora", in ACL'19. [bibtex]
+
 
